@@ -1,4 +1,4 @@
-# MATGLAB example classifier code for the George B. Moody PhysioNet Challenge 2022
+# MATLAB example classifier code for the George B. Moody PhysioNet Challenge 2022
 
 ## What's in this repository?
 
