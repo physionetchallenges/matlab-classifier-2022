@@ -18,13 +18,15 @@ patient_files={patient_files.name};
 patient_files=sort(patient_files); % To help debugging
 num_patient_files=length(patient_files);
 
+fprintf('Loading data for %d patients...\n', num_patient_files)
+
 % Create the output directory if it doesn't exist
 if ~exist(output_directory, 'dir')
     mkdir(output_directory)
 end
 
 % Run the model
-disp('Running the model on challenge...')
+disp('Running the model on the Challenge data...')
 
 for j=1:num_patient_files
 

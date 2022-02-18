@@ -9,19 +9,19 @@ function model = team_training_code(input_directory,output_directory) % train_PC
 % 1. model: trained model
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-disp('Loading data...')
-
 % Find text files
-header_files=dir(fullfile(input_directory,'*.txt'));
-header_files={header_files.name};
-header_files=sort(header_files); % To help debugging
-num_header_files=length(header_files);
+patient_files=dir(fullfile(input_directory,'*.txt'));
+patient_files={patient_files.name};
+patient_files=sort(patient_files); % To help debugging
+num_patient_files=length(patient_files);
+
+fprintf('Loading data for %d patients...\n', num_patient_files)
 
 % Extract classes from data
 classes={};
-for j=1:num_header_files
+for j=1:num_patient_files
 
-    current_class=get_class(fullfile(input_directory,header_files{j}));
+    current_class=get_class(fullfile(input_directory,patient_files{j}));
     classes=unique([classes current_class]);
 
 end
@@ -35,24 +35,28 @@ disp('Extracting features and labels...')
 features=[];
 labels=categorical;
 
-for j=1:num_header_files
+for j=1:num_patient_files
 
-    fprintf('%d/%d \n',j,num_header_files)
+    fprintf('%d/%d \n',j,num_patient_files)
 
-    current_header=get_header(fullfile(input_directory,header_files{j}));
+    current_header=get_header(fullfile(input_directory,patient_files{j}));
     current_recordings=load_recordings(input_directory,current_header);
 
     current_features=get_features(current_header, current_recordings);
     features(j,:) = current_features(:);
 
-    labels(j)=get_class(fullfile(input_directory,header_files{j}));
+    labels(j)=get_class(fullfile(input_directory,patient_files{j}));
 
 end
 
 %% train RF
 
+disp('Training the model...')
+
 model = TreeBagger(300,features,labels);
 save_model(model,classes,output_directory);
+
+disp('Done.')
 
 end
 
