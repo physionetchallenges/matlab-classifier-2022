@@ -18,22 +18,30 @@ num_patient_files=length(patient_files);
 fprintf('Loading data for %d patients...\n', num_patient_files)
 
 % Extract classes from data
-classes={};
+classes_murmur={};
+classes_outcome={};
 for j=1:num_patient_files
 
-    current_class=get_class(fullfile(input_directory,patient_files{j}));
-    classes=unique([classes current_class]);
+    current_class_murmur=get_class_murmur(fullfile(input_directory,patient_files{j}));
+    classes_murmur=unique([classes_murmur current_class_murmur]);
+
+    current_class_outcome=get_class_outcome(fullfile(input_directory,patient_files{j}));
+    classes_outcome=unique([classes_outcome current_class_outcome]);
 
 end
 
-classes=sort(classes);
-num_classes=length(classes);
+classes_murmur=sort(classes_murmur);
+num_classes_murmur=length(classes_murmur);
+
+classes_outcome=sort(classes_outcome);
+num_classes_outcome=length(classes_outcome);
 
 % Extracting features and labels
 disp('Extracting features and labels...')
 
 features=[];
-labels=categorical;
+labels_murmur=categorical;
+labels_outcome=categorical;
 
 for j=1:num_patient_files
 
@@ -45,7 +53,8 @@ for j=1:num_patient_files
     current_features=get_features(current_header, current_recordings);
     features(j,:) = current_features(:);
 
-    labels(j)=get_class(fullfile(input_directory,patient_files{j}));
+    labels_murmur(j)=get_class_murmur(fullfile(input_directory,patient_files{j}));
+    labels_outcome(j)=get_class_outcome(fullfile(input_directory,patient_files{j}));
 
 end
 
@@ -53,26 +62,39 @@ end
 
 disp('Training the model...')
 
-model = TreeBagger(300,features,labels);
-save_model(model,classes,output_directory);
+model_murmur = TreeBagger(300,features,labels_murmur);
+
+model_outcome = TreeBagger(300,features,labels_outcome);
+
+save_model(model_murmur,classes_murmur,model_outcome,classes_outcome,output_directory);
 
 disp('Done.')
 
 end
 
-function save_model(model,classes,output_directory) %save_PCG_model
+function save_model(model_murmur,classes_murmur,model_outcome,classes_outcome,output_directory) %save_PCG_model
 % Save results.
 filename = fullfile(output_directory,'model.mat');
-save(filename,'model','classes','-v7.3');
+save(filename,'model_murmur','classes_murmur','model_outcome','classes_outcome','-v7.3');
 
 disp('Done.')
 end
 
-function class=get_class(input_header)
+function class=get_class_murmur(input_header)
 
 current_header=get_header(input_header);
 
 class=current_header(startsWith(current_header,'#Murmur'));
+class=strsplit(class{1},':');
+class=strtrim(class{2});
+
+end
+
+function class=get_class_outcome(input_header)
+
+current_header=get_header(input_header);
+
+class=current_header(startsWith(current_header,'#Outcome'));
 class=strsplit(class{1},':');
 class=strtrim(class{2});
 
